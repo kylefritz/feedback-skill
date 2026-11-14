@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Desk · feedback example</title>
+<link rel="stylesheet" href="comments.css">
+<style>
+  :root { color-scheme: light; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #e9e5de; font: 15px/1.4 system-ui, -apple-system, sans-serif; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  header { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; gap: 12px; align-items: baseline; pointer-events: none; }
+  header h1 { margin: 0; font-size: 17px; }
+  header a { pointer-events: auto; color: #2f5d7c; font-size: 14px; }
+  body.fb-noting header { display: none; }
+</style>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+<canvas id="view"></canvas>
+<header><h1>A desk, in 3D</h1><a href="flat.html">2D page example</a></header>
+<script type="module" src="scene.js"></script>
+</body>
+</html>

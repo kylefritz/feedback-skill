@@ -1,0 +1,73 @@
+/* comments.css: the Comment panel, ink, pins and toast from comments.js.
+   Theme it with the custom properties; everything is under .fb so it won't touch your page. */
+.fb {
+  --fb-surface: #fffdf9; --fb-text: #1f2328; --fb-muted: #6b6f76; --fb-mist: #f0ece5;
+  --fb-line: #d6cfc3; --fb-accent: #2f5d7c; --fb-ink: #ff5a36; --fb-done: #2f7a4a;
+  --fb-shadow: 0 8px 28px rgb(0 0 0 / .18);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fb-text);
+}
+@media (prefers-color-scheme: dark) {
+  .fb { --fb-surface: #1f2226; --fb-text: #eceae6; --fb-muted: #a3a7ad; --fb-mist: #2b2f34; --fb-line: #3b4047; --fb-accent: #7fb2d6; --fb-done: #6cc38d; }
+}
+.fb button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+
+/* Stacking matters: ink under the panel, or the pen eats the tap on Send. */
+.fb-ink { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; touch-action: none; z-index: 2147483000; }
+.fb.fb-inking .fb-ink { pointer-events: auto; cursor: crosshair; }
+.fb-pins { position: fixed; inset: 0; pointer-events: none; z-index: 2147483001; }
+.fb-panel, .fb-button { z-index: 2147483002; }
+.fb-toast { z-index: 2147483003; }
+
+.fb-button {
+  position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+  min-height: 44px; padding: 0 16px; border-radius: 22px;
+  background: var(--fb-accent) !important; color: #fff !important; font-weight: 600 !important; box-shadow: var(--fb-shadow);
+}
+.fb-button[hidden] { display: none; }
+
+.fb-panel {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(560px, calc(100% - 32px)); max-height: 70vh; overflow: auto; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  background: var(--fb-surface); border-radius: 14px; box-shadow: var(--fb-shadow);
+}
+.fb-panel[hidden] { display: none; }
+.fb-row { display: flex; gap: 8px; align-items: center; }
+.fb-hint { margin: 0; font-size: 13px; color: var(--fb-muted); }
+.fb-tools { display: flex; flex: 1; background: var(--fb-mist); border-radius: 10px; padding: 3px; gap: 3px; }
+.fb-tools button { flex: 1; min-height: 38px; border-radius: 8px; font-size: 14px; }
+.fb-tools button.on { background: var(--fb-surface); box-shadow: 0 1px 3px rgb(0 0 0 / .15); font-weight: 600; }
+.fb textarea, .fb input {
+  font: inherit; font-size: 16px; /* 16px keeps iOS from zooming in */
+  border: 1px solid var(--fb-line); border-radius: 10px; padding: 8px 10px; box-sizing: border-box;
+  background: var(--fb-surface); color: var(--fb-text); width: 100%;
+}
+.fb textarea { resize: vertical; min-height: 64px; }
+.fb input { flex: 1; min-width: 0; }
+.fb .fb-plain { flex: none; min-height: 44px; padding: 0 12px; border-radius: 10px; background: var(--fb-mist); font-size: 14px; }
+.fb .fb-plain:disabled { opacity: .45; }
+.fb .fb-send { flex: none; min-height: 44px; padding: 0 18px; border-radius: 10px; background: var(--fb-accent); color: #fff; font-weight: 600; }
+.fb .fb-send:disabled { opacity: .5; }
+.fb-hp { position: absolute !important; left: -9999px; width: 1px !important; height: 1px; opacity: 0; }
+
+.fb-list summary { font-size: 13px; color: var(--fb-muted); cursor: pointer; }
+.fb-list ol { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.fb-list li { background: var(--fb-mist); border-radius: 10px; padding: 8px 10px; }
+.fb-meta { font-size: 12px; color: var(--fb-muted); }
+.fb-status[data-status=done], .fb-status[data-status=wontfix] { color: var(--fb-done); }
+.fb-reply { margin-top: 4px; padding-left: 8px; border-left: 3px solid var(--fb-accent); }
+.fb-acts { margin-top: 4px; }
+.fb-acts button, .fb-acts a { font-size: 12px; color: var(--fb-accent); text-decoration: underline; margin-right: 12px; }
+
+.fb-pin {
+  position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+  background: var(--fb-ink); color: #fff; font: 600 13px/26px system-ui, sans-serif; text-align: center;
+  box-shadow: 0 0 0 2px #fff, 0 2px 6px rgb(0 0 0 / .25);
+}
+.fb-pin[hidden] { display: none; }
+.fb-toast {
+  position: fixed; left: 50%; transform: translateX(-50%); top: max(16px, env(safe-area-inset-top));
+  max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 10px;
+  background: rgb(20 22 25 / .88); color: #fff; font-size: 14px;
+}
+.fb-toast[hidden] { display: none; }

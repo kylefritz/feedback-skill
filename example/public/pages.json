@@ -1,0 +1,6 @@
+{
+  "pages": [
+    { "name": "desk", "title": "Desk (3D)", "path": "/" },
+    { "name": "landing", "title": "Landing page (2D)", "path": "/flat.html" }
+  ]
+}

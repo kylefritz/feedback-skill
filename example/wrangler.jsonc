@@ -1,0 +1,30 @@
+// The example site: public/ as static assets, plus worker.js for /api/* and a D1 database.
+//   make dev                      local: wrangler dev + a local D1 on http://localhost:8791
+//   make deploy                   yours: fill in the two placeholders and ALLOWED_ORIGINS first
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "feedback-example",
+  "account_id": "<your-account-id>",
+  // Pin a date your local workerd supports: `wrangler dev` refuses one newer than its runtime.
+  "compatibility_date": "2026-10-01",
+  "main": "worker.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    // Only /api/* runs the script; every other request is a static file, free.
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "feedback-comments",
+      "database_id": "<your-database-id>",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    // Where a note's deep link may point (localhost is always allowed for wrangler dev).
+    "ALLOWED_ORIGINS": "https://feedback-example.<your-subdomain>.workers.dev"
+  }
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Landing page · feedback example</title>
+<link rel="stylesheet" href="comments.css">
+<style>
+  :root { --bg: #faf8f4; --text: #1f2328; --muted: #5f646b; --card: #ffffff; --accent: #2f5d7c; --line: #e3ddd3; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #16181b; --text: #eceae6; --muted: #a3a7ad; --card: #202328; --accent: #7fb2d6; --line: #30353b; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 120px; }
+  nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  nav b { font-size: 18px; }
+  nav a { color: var(--accent); font-size: 15px; }
+  .hero { padding: 48px 0 32px; }
+  .hero h1 { font-size: clamp(30px, 6vw, 48px); line-height: 1.1; margin: 0 0 12px; }
+  .hero p { color: var(--muted); max-width: 36em; margin: 0 0 20px; }
+  .cta { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0 40px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15px; }
+  .price { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  .price strong { font-size: 36px; }
+  footer { color: var(--muted); font-size: 14px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<main>
+  <nav data-comment-id="nav" data-comment-label="Top bar"><b>Sproutbox</b><a href="./">3D example</a></nav>
+
+  <section class="hero" data-comment-id="hero" data-comment-label="Hero">
+    <h1>Seeds that suit your windowsill</h1>
+    <p>Tell us how much light you get and we'll send four herbs a season that will grow there, with a card for each.</p>
+    <a class="cta" href="#plans">See the plans</a>
+  </section>
+
+  <section class="cards" data-comment-id="features" data-comment-label="Features">
+    <div class="card" data-comment-id="feature-light" data-comment-label="Feature: light"><h3>Picked for your light</h3><p>North window, south balcony, or a grow lamp in the kitchen.</p></div>
+    <div class="card" data-comment-id="feature-cards" data-comment-label="Feature: care cards"><h3>A card for each herb</h3><p>When to sow, how much water, and when to cut.</p></div>
+    <div class="card" data-comment-id="feature-swap" data-comment-label="Feature: swaps"><h3>Swap what didn't take</h3><p>Basil sulked? Tell us and the next box skips it.</p></div>
+  </section>
+
+  <section id="plans" class="price" data-comment-id="pricing" data-comment-label="Pricing">
+    <h2>One plan</h2>
+    <p><strong>$12</strong> a season, four packets, free shipping.</p>
+    <a class="cta" href="#plans">Start in spring</a>
+  </section>
+
+  <footer data-comment-id="footer" data-comment-label="Footer">A made-up shop for the feedback-skill example.</footer>
+</main>
+<script type="module">
+  import { mountComments, domAdapter } from './comments.js';
+  mountComments({ page: 'landing', ...domAdapter() });
+</script>
+</body>
+</html>
