@@ -72,6 +72,9 @@ Don't reply "done" before the change is live: the person will go look.
    screen), `frame` (render, return the canvas), `view`/`goTo`/`link` (the camera), `hold`
    (disable the orbit controls), and calls `tick()` in the render loop. Give pieces
    `{id, label}` in glTF extras so a pin says what it's on.
+   Behind a login (Cloudflare Access): `vars.AUTHOR_FROM_ACCESS = "1"` and
+   `mountComments({..., me: './api/me'})`, so notes carry the signed-in email instead of a
+   typed name (README, "Signed-in sites").
 4. **Agent side.** Copy `scripts/comments.py` (standard library only; needs a wrangler
    login, no token in the repo) and add the SessionStart hook:
 

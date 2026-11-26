@@ -107,3 +107,18 @@ test('other paths go to the static assets', async () => {
   const r = await worker.fetch(new Request('https://notes.example.com/index.html'), env());
   assert.equal(await r.text(), 'asset');
 });
+
+test('behind Access, the author is the signed-in email, not the typed name', async () => {
+  const db = fakeDB(), e = { ...env(db), AUTHOR_FROM_ACCESS: '1' };
+  const r = await worker.fetch(new Request('https://notes.example.com/api/comments', {
+    method: 'POST', body: JSON.stringify(good),
+    headers: { 'content-type': 'application/json', 'cf-access-authenticated-user-email': 'sam@example.com' } }), e);
+  assert.equal(r.status, 201);
+  assert.equal(db.calls[0].args[3], 'sam@example.com');
+});
+
+test('/api/me says who is signed in, and nobody when Access authors are off', async () => {
+  const req = () => new Request('https://notes.example.com/api/me', { headers: { 'cf-access-authenticated-user-email': 'sam@example.com' } });
+  assert.deepEqual(await (await worker.fetch(req(), { ...env(), AUTHOR_FROM_ACCESS: '1' })).json(), { email: 'sam@example.com' });
+  assert.deepEqual(await (await worker.fetch(req(), env())).json(), { email: null });
+});

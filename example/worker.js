@@ -2,6 +2,7 @@
 //   POST /api/comments            a note from the Comment panel (public/comments.js)
 //   GET  /api/comments?page=NAME  notes for one page, newest first, without their pictures
 //   GET  /api/comments/ID.jpg     the picture sent with a note
+//   GET  /api/me                  {email} of the signed-in person, or {email: null}
 // Notes are read and answered from the repo with scripts/comments.py.
 //
 // The endpoint is public: no login, so it checks everything and keeps it small. A hidden
@@ -23,6 +24,13 @@ function linkOK(link, env) {
     return (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean).includes(u.origin);
   } catch { return false; }
 }
+
+// Behind Cloudflare Access (AUTHOR_FROM_ACCESS = "1"), the author is the email Access signed
+// in, not a typed name. Access sets this header on every request it lets through; trust it
+// only when Access covers the whole hostname and workers.dev / preview URLs are off (or verify
+// the Cf-Access-Jwt-Assertion token instead, as a stricter site should).
+const signedIn = (request, env) =>
+  env.AUTHOR_FROM_ACCESS === '1' ? text(request.headers.get('cf-access-authenticated-user-email'), 200) || null : null;
 
 async function create(request, env) {
   if (Number(request.headers.get('content-length') || 0) > MAX_IMAGE + 200_000) return json({ error: 'too big' }, 413);
@@ -46,7 +54,7 @@ async function create(request, env) {
   await env.DB.prepare(
     `INSERT INTO comments (id, created, page, author, body, link, view, viewport, pins, strokes, image)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .bind(id, new Date().toISOString(), c.page, text(c.author, 60) || null, body, link, view, viewport,
+    .bind(id, new Date().toISOString(), c.page, signedIn(request, env) || text(c.author, 60) || null, body, link, view, viewport,
       JSON.stringify(pins), strokes, image)
     .run();
   return json({ ok: true, id }, 201);
@@ -72,6 +80,7 @@ async function picture(id, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/me' && request.method === 'GET') return json({ email: signedIn(request, env) });
     if (url.pathname === '/api/comments') {
       if (request.method === 'POST') return create(request, env);
       if (request.method === 'GET') return list(url, env);
