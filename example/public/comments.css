@@ -71,3 +71,6 @@
   background: rgb(20 22 25 / .88); color: #fff; font-size: 14px;
 }
 .fb-toast[hidden] { display: none; }
+
+/* signed-in sender (mountComments({me})) */
+.fb-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; opacity: .75; }

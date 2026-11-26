@@ -89,6 +89,20 @@ $ make test                    # pytest (comments.py, catalog) + node --test (wo
    token in the repo) and add the hook to `.claude/settings.json`
    (`example/.claude/settings.json` is one).
 
+## Signed-in sites
+
+If the page is behind a login, the note should say who wrote it without asking. Behind
+[Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/):
+
+- set `"AUTHOR_FROM_ACCESS": "1"` in the Worker's `vars`; it then stamps each note with the
+  email Access signed in (the `cf-access-authenticated-user-email` header) and ignores any
+  typed name, and `GET /api/me` answers `{email}`;
+- pass `me: './api/me'` to `mountComments`; the panel shows the email where the name box was.
+
+Trust the header only when Access covers the whole hostname and the `workers.dev` and preview
+URLs are off. A stricter site verifies the `Cf-Access-Jwt-Assertion` token itself and passes
+the email in (kylefritz/mproperties `projects/deep-mountain/` does that).
+
 ## The skill
 
 `skills/feedback/SKILL.md` tells an agent how to handle a note (list, show, look, act,

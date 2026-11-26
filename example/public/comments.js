@@ -19,6 +19,9 @@
 //     link(),                  // -> deep link to this view
 //     hold(on),                // stop the camera or scrolling while there is ink on screen
 //     button,                  // optional: your own Comment button (else one is added)
+//     me,                      // optional: URL answering {email} when the site has sign-in
+//                              //   (e.g. Cloudflare Access); the panel shows who is signed in
+//                              //   instead of a name box, and the server stamps the author
 //   })
 //
 // It returns {open, close, isOpen, tick, refresh}. Call tick() every frame in a 3D render
@@ -56,6 +59,16 @@ export function mountComments(o) {
     root.append(button);
   }
   try { author.value = localStorage.getItem(key) || ''; } catch {}
+  let signedIn = false;
+  if (o.me) {
+    fetch(o.me, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).then(d => {
+      if (!d?.email) return;
+      signedIn = true; author.value = d.email; author.hidden = true;
+      const who = document.createElement('span');
+      who.className = 'fb-who'; who.textContent = d.email; who.title = 'Signed in';
+      author.after(who);
+    }).catch(() => {});
+  }
 
   function toast(msg) {
     const t = $('.fb-toast');
@@ -184,7 +197,7 @@ export function mountComments(o) {
     const body = note.value.trim();
     if (!body && !pins.length && !strokes.length) { toast('Write a note, tap something, or draw first'); return; }
     const name = author.value.trim();
-    try { localStorage.setItem(key, name); } catch {}
+    if (!signedIn) try { localStorage.setItem(key, name); } catch {}
     const payload = {
       page: o.page, author: name, body, link: o.link(), view: o.view(), viewport: `${innerWidth}x${innerHeight}`,
       pins: pins.map(({ x, y, z, id, label }) => ({ x, y, z: z ?? null, id: id ?? null, label: label ?? null })),
