@@ -101,7 +101,7 @@ If the page is behind a login, the note should say who wrote it without asking. 
 
 Trust the header only when Access covers the whole hostname and the `workers.dev` and preview
 URLs are off. A stricter site verifies the `Cf-Access-Jwt-Assertion` token itself and passes
-the email in (kylefritz/mproperties `projects/deep-mountain/` does that).
+the email in.
 
 ## The skill
 
