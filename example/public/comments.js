@@ -24,6 +24,11 @@
 //                              //   instead of a name box, and the server stamps the author
 //   })
 //
+// The panel never blocks the page: it docks as a right-hand sidebar (var(--fb-dock-w), 340px)
+// on a wide screen and as a foldable bottom sheet, at most 40% of the height, on a phone.
+// While it is open <body> has class fb-noting, so the page can move its own right-hand
+// controls out of the sidebar's way.
+//
 // It returns {open, close, isOpen, tick, refresh}. Call tick() every frame in a 3D render
 // loop so pins follow the camera; on a 2D page scrolling and resizing call it for you.
 // domAdapter() below is a ready adapter for an ordinary page (pins on elements).
@@ -39,6 +44,7 @@ export function mountComments(o) {
   root.innerHTML = `
 <canvas class="fb-ink" aria-hidden="true"></canvas><div class="fb-pins" aria-hidden="true"></div>
 <section class="fb-panel" hidden aria-label="Comment">
+  <div class="fb-head"><b>Comment</b><button type="button" data-act="fold" aria-expanded="true" aria-label="Fold the comment panel">▾</button><button type="button" data-act="close" aria-label="Close">×</button></div>
   <div class="fb-row"><div class="fb-tools" role="group" aria-label="Mark"><button type="button" data-tool="point">Point at things</button><button type="button" data-tool="pen">Pen</button></div><button type="button" class="fb-plain" data-act="undo">Undo</button></div>
   <p class="fb-hint"></p>
   <textarea rows="3" maxlength="4000" placeholder="What should change, or what is this?"></textarea>
@@ -122,8 +128,14 @@ export function mountComments(o) {
 
   function clear() { for (const p of pins) p.dot.remove(); pins = []; strokes = []; undo = []; drawInk(); }
 
+  function fold(on) {
+    panel.classList.toggle('fb-folded', on);
+    const b = $('[data-act=fold]');
+    b.textContent = on ? '▴' : '▾'; b.setAttribute('aria-expanded', String(!on));
+  }
+
   function setOpen(on) {
-    open = on; panel.hidden = !on; button.hidden = on;
+    open = on; panel.hidden = !on; button.hidden = on; fold(false);
     document.body.classList.toggle('fb-noting', on);
     if (on) { tool = 'point'; sizeInk(); refresh(); } else clear();
     sync(); tick();
@@ -161,6 +173,8 @@ export function mountComments(o) {
     sync();
   };
   $('[data-act=cancel]').onclick = () => setOpen(false);
+  $('[data-act=close]').onclick = () => setOpen(false);
+  $('[data-act=fold]').onclick = () => fold(!panel.classList.contains('fb-folded'));
   button.addEventListener('click', () => setOpen(true));
   addEventListener('keydown', e => { if (e.key === 'Escape' && open) setOpen(false); });
   addEventListener('resize', () => { if (open) sizeInk(); tick(); });
