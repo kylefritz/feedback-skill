@@ -53,6 +53,19 @@ and `scripts/comments.py`.
 
 Don't reply "done" before the change is live: the person will go look.
 
+## The comment UI never blocks the main UI
+
+The page is what people are commenting on, so the Comment panel must never cover it. It
+docks at the side: a **right-hand sidebar** on a wide screen (340px, `--fb-dock-w`) and a
+**foldable bottom sheet** on a phone (at most 40% of the height, folding to its header).
+Never a centred modal or a box over the middle of the content, and nothing that stops
+the page being used while the panel is open: people orbit, scroll and tap the page to pin
+things with the panel still open. `comments.css` does this out of the box; keep it that
+way when restyling. While the panel is open `<body>` has `.fb-noting`: move the page's own
+right-hand controls (cards, toolbars, buttons) left by `var(--fb-dock-w)` on wide screens,
+and hide or tuck bottom-edge controls on phones, so nothing of the page hides under it.
+Check both widths with a screenshot before shipping.
+
 ## Adding it to a site
 
 1. **Server.** Copy `example/worker.js`, `example/rules.js` and
@@ -72,6 +85,8 @@ Don't reply "done" before the change is live: the person will go look.
    screen), `frame` (render, return the canvas), `view`/`goTo`/`link` (the camera), `hold`
    (disable the orbit controls), and calls `tick()` in the render loop. Give pieces
    `{id, label}` in glTF extras so a pin says what it's on.
+   Make room for the docked panel (above): `body.fb-noting` rules for the page's own
+   right-hand and bottom-edge controls. Don't restyle `.fb-panel` into a centred modal.
    Behind a login (Cloudflare Access): `vars.AUTHOR_FROM_ACCESS = "1"` and
    `mountComments({..., me: './api/me'})`, so notes carry the signed-in email instead of a
    typed name (README, "Signed-in sites").
@@ -117,6 +132,14 @@ Don't reply "done" before the change is live: the person will go look.
 10. **Two servers can share a port.** `localhost` may resolve to IPv6 while `wrangler dev`
     listens on IPv4 127.0.0.1. If the page 404s with someone else's error page, check
     `lsof -iTCP:PORT -sTCP:LISTEN` and use `127.0.0.1`.
+
+11. **A panel in the middle blocks the very thing being commented on.** The first version
+    was a card at the bottom centre, up to 70% of the height; on a phone it covered the
+    model and on desktop it sat on the view (and a tap meant for a pin opened the page's
+    own info card too). Kyle: "the comments UI should be on the right sidebar, not blocking
+    the center." It docks now: right sidebar on desktop, foldable bottom sheet on a phone.
+    While commenting, the page should treat a tap as a pin only (check `isOpen()` before
+    its own click handling).
 
 ## Data
 

@@ -27,6 +27,15 @@ white. `tools/overlay.py` screenshots the page at the note's viewport and puts t
 
 ![The reply under the note](docs/img/desktop-2d-reply.png)
 
+## It never blocks the page
+
+The Comment panel docks at the side of the page instead of sitting on it: a right-hand
+sidebar (340px) on a wide screen, a bottom sheet of at most 40% of the height on a phone
+that folds down to its header. You keep orbiting, scrolling and tapping the page with it
+open; that's how pins get dropped. Never turn it into a centred modal. While it's open,
+`<body>` has the class `fb-noting`, so a page can move its own right-hand controls out of
+the way by `var(--fb-dock-w)`.
+
 ## The loop
 
 1. **The person** opens Comment, taps things (numbered pins) or draws (Pen), writes a note,
@@ -120,7 +129,7 @@ pricing page".
 
 | Path | What it does |
 | --- | --- |
-| `example/public/comments.js`, `comments.css` | the button, panel, pins, pen, picture, earlier notes; `domAdapter()` for plain pages |
+| `example/public/comments.js`, `comments.css` | the button, the docked panel (right sidebar / phone bottom sheet), pins, pen, picture, earlier notes; `domAdapter()` for plain pages |
 | `example/public/index.html`, `scene.js` | a three.js desk with a Comment button |
 | `example/public/flat.html` | a plain page with one |
 | `example/public/pages.json` | the catalog: the only pages the server takes notes for |

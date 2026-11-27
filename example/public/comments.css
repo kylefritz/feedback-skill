@@ -25,13 +25,32 @@
 }
 .fb-button[hidden] { display: none; }
 
+/* The panel never blocks the page. It docks: a right-hand sidebar on a wide screen, a foldable
+   bottom sheet (at most 40% of the height) on a phone. Never a box in the middle of the content.
+   While it is open, <body> has .fb-noting; move your own right-hand controls by --fb-dock-w. */
+:root { --fb-dock-w: 340px; }
 .fb-panel {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: max(16px, env(safe-area-inset-bottom));
-  width: min(560px, calc(100% - 32px)); max-height: 70vh; overflow: auto; box-sizing: border-box;
-  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
-  background: var(--fb-surface); border-radius: 14px; box-shadow: var(--fb-shadow);
+  position: fixed; top: 0; right: 0; bottom: 0; width: var(--fb-dock-w); max-width: 100%; overflow: auto; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+  background: var(--fb-surface); border-left: 1px solid var(--fb-line); box-shadow: -6px 0 24px rgb(0 0 0 / .16);
 }
 .fb-panel[hidden] { display: none; }
+.fb-head { display: flex; align-items: center; gap: 4px; }
+.fb-head b { flex: 1; font-size: 15px; }
+.fb .fb-head button { min-width: 40px; min-height: 40px; border-radius: 8px; font-size: 20px; line-height: 1; color: var(--fb-muted); }
+.fb .fb-head [data-act=fold] { display: none; }
+/* an ordinary page reflows beside the sidebar instead of running under it (fixed layers, like a
+   full-window canvas, aren't moved: make room for those with body.fb-noting rules of your own) */
+@media (min-width: 701px) { body.fb-noting { padding-right: var(--fb-dock-w); } }
+@media (max-width: 700px) {
+  .fb-panel {
+    top: auto; left: 0; width: auto; max-height: 40vh; max-height: 40dvh;
+    border-left: 0; border-top: 1px solid var(--fb-line); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 24px rgb(0 0 0 / .16);
+  }
+  .fb .fb-head [data-act=fold] { display: inline-block; }
+  .fb-panel.fb-folded > :not(.fb-head) { display: none; }
+}
 .fb-row { display: flex; gap: 8px; align-items: center; }
 .fb-hint { margin: 0; font-size: 13px; color: var(--fb-muted); }
 .fb-tools { display: flex; flex: 1; background: var(--fb-mist); border-radius: 10px; padding: 3px; gap: 3px; }
