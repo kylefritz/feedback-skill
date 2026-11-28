@@ -84,7 +84,17 @@ export function mountComments(o) {
 
   // Ink lives in client pixels on a full-window canvas. It sits *under* the panel (CSS
   // z-index): above it, it would take the pen's taps on Send.
-  function sizeInk() { const r = Math.min(devicePixelRatio || 1, 2); ink.width = innerWidth * r; ink.height = innerHeight * r; drawInk(); }
+  // The canvas is sized and drawn from its own on-screen box, not innerWidth/innerHeight: on a
+  // phone the fixed box and innerHeight differ while the address bar shows or hides, and the
+  // strokes were stretched onto the taller box, landing below the finger (Kyle, 2026-11-27).
+  let box = { left: 0, top: 0, width: innerWidth, height: innerHeight };
+  function sizeInk() {
+    const b = ink.getBoundingClientRect();
+    box = b.width && b.height ? b : { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    const r = Math.min(devicePixelRatio || 1, 2);
+    ink.width = Math.round(box.width * r); ink.height = Math.round(box.height * r);
+    drawInk();
+  }
   function paint(ctx) {
     ctx.lineCap = ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = INK;
     for (const st of strokes) {
@@ -94,7 +104,12 @@ export function mountComments(o) {
       ctx.stroke();
     }
   }
-  function drawInk() { const r = ink.width / innerWidth; g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, innerWidth, innerHeight); paint(g); }
+  function drawInk() {
+    const r = ink.width / box.width;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, ink.width, ink.height);
+    g.setTransform(r, 0, 0, r, -box.left * r, -box.top * r); // strokes are in client pixels
+    paint(g);
+  }
 
   // The view holds still while there is ink on it: the ink is on the screen, not on the things.
   function sync() {
@@ -157,6 +172,8 @@ export function mountComments(o) {
 
   ink.addEventListener('pointerdown', e => {
     if (tool !== 'pen') return;
+    const b = ink.getBoundingClientRect();
+    if (Math.abs(b.height - box.height) > 0.5 || Math.abs(b.top - box.top) > 0.5) sizeInk(); // the bar moved since
     ink.setPointerCapture(e.pointerId);
     live = [[e.clientX, e.clientY]]; strokes.push(live); undo.push('stroke');
     drawInk(); sync();
@@ -178,26 +195,29 @@ export function mountComments(o) {
   button.addEventListener('click', () => setOpen(true));
   addEventListener('keydown', e => { if (e.key === 'Escape' && open) setOpen(false); });
   addEventListener('resize', () => { if (open) sizeInk(); tick(); });
+  window.visualViewport?.addEventListener('resize', () => { if (open) sizeInk(); tick(); });
   addEventListener('scroll', tick, { capture: true, passive: true });
 
   // The picture: the page's frame where it sits on screen (white elsewhere), the ink on top,
   // the pins as numbered dots. At most 1600 px wide; pen marks exist only here.
   function snapshot(quality) {
-    const r = Math.min(devicePixelRatio || 1, 2), w = Math.round(Math.min(MAX_PICTURE_PX, innerWidth * r));
-    const s = w / innerWidth, h = Math.round(innerHeight * s);
+    // the picture is exactly the ink's box, so the frame, the strokes and the pins line up
+    sizeInk();
+    const r = Math.min(devicePixelRatio || 1, 2), w = Math.round(Math.min(MAX_PICTURE_PX, box.width * r));
+    const s = w / box.width, h = Math.round(box.height * s);
     const out = document.createElement('canvas'); out.width = w; out.height = h;
     const c = out.getContext('2d');
     c.fillStyle = '#fff'; c.fillRect(0, 0, w, h);
     const src = o.frame?.();
     if (src) {
-      const b = src.isConnected ? src.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight };
-      c.drawImage(src, b.left * s, b.top * s, b.width * s, b.height * s);
+      const b = src.isConnected ? src.getBoundingClientRect() : box;
+      c.drawImage(src, (b.left - box.left) * s, (b.top - box.top) * s, b.width * s, b.height * s);
     }
-    c.setTransform(s, 0, 0, s, 0, 0); paint(c); c.setTransform(1, 0, 0, 1, 0, 0);
+    c.setTransform(s, 0, 0, s, -box.left * s, -box.top * s); paint(c); c.setTransform(1, 0, 0, 1, 0, 0);
     tick();
     for (const p of pins) {
       if (p.dot.hidden) continue;
-      const x = parseFloat(p.dot.style.left) * s, y = parseFloat(p.dot.style.top) * s, rad = 13 * s;
+      const x = (parseFloat(p.dot.style.left) - box.left) * s, y = (parseFloat(p.dot.style.top) - box.top) * s, rad = 13 * s;
       c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, rad + 2 * s, 0, 7); c.fill();
       c.fillStyle = INK; c.beginPath(); c.arc(x, y, rad, 0, 7); c.fill();
       c.fillStyle = '#fff'; c.font = `600 ${13 * s}px system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
