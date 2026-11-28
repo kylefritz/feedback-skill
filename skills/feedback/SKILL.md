@@ -140,6 +140,10 @@ Check both widths with a screenshot before shipping.
     the center." It docks now: right sidebar on desktop, foldable bottom sheet on a phone.
     While commenting, the page should treat a tap as a pin only (check `isOpen()` before
     its own click handling).
+12. **Size the ink canvas from its own box, not `innerWidth`/`innerHeight`.** On a phone the
+    fixed canvas and the window differ while the address bar shows or hides, and strokes
+    landed below the finger. comments.js measures `getBoundingClientRect()` (again on
+    `visualViewport` resize and at pen-down); `tools/demo.py pen` checks it.
 
 ## Data
 

@@ -6,6 +6,7 @@
 
     uv run tools/demo.py send   [URL]   # a pin and a pen circle on each page, then Send
     uv run tools/demo.py replies [URL]  # after replying with comments.py: the replies on the page
+    uv run tools/demo.py pen    [URL]   # the pen's ink lands under the pointer (no screenshots)
 
 Screenshots go to docs/img/. Needs Chromium for Playwright once:
     uvx --from playwright playwright install chromium
@@ -88,6 +89,30 @@ def send(base):
     print("sent two notes; screenshots in docs/img/")
 
 
+def pen(base):
+    """The ink lands under the pointer even when the ink box isn't the window (a phone's
+    address bar moving). Shift the box 60 px down, draw at y 300, read the pixels back."""
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        page = b.new_context(**PHONE).new_page()
+        page.goto(f"{base}/flat.html")
+        page.add_style_tag(content=".fb-ink { top: 60px !important; height: calc(100% - 60px) !important; }")
+        page.click(".fb-button")
+        page.click("[data-tool=pen]")
+        page.mouse.move(100, 300)
+        page.mouse.down()
+        page.mouse.move(250, 300, steps=10)
+        page.mouse.up()
+        ink_at = """([x, y]) => {
+            const c = document.querySelector('.fb-ink'), b = c.getBoundingClientRect(), r = c.width / b.width;
+            return c.getContext('2d').getImageData(Math.round((x - b.left) * r), Math.round((y - b.top) * r), 1, 1).data[3] > 0;
+        }"""
+        under, below = page.evaluate(ink_at, [175, 300]), page.evaluate(ink_at, [175, 360])
+        b.close()
+    assert under and not below, f"ink under the pointer: {under}, 60 px below it: {below}"
+    print("pen ink lands under the pointer")
+
+
 def replies(base):
     with sync_playwright() as p:
         b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
@@ -111,4 +136,4 @@ def replies(base):
 if __name__ == "__main__":
     action = sys.argv[1] if len(sys.argv) > 1 else "send"
     base = (sys.argv[2] if len(sys.argv) > 2 else "http://127.0.0.1:8791").rstrip("/")
-    {"send": send, "replies": replies}[action](base)
+    {"send": send, "replies": replies, "pen": pen}[action](base)
